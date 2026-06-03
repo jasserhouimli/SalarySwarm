@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Large data files (uncomment if you prefer not to track them)
+# datasets/*.csv
+# purchases.txt
+
+# Reports (generated PDFs)
+# *.pdf
