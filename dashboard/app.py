@@ -3,8 +3,8 @@
 The dashboard reads the cleaned dataset from HDFS through Spark and renders
 the KPIs and Plotly charts described in the project report.
 
-Launch it with ``make dashboard`` (or ``streamlit run app.py`` inside the
-``spark-master`` container).
+Launch it with ``make dashboard`` (or ``streamlit run dashboard/app.py`` inside
+the ``spark-master`` container).
 """
 from __future__ import annotations
 

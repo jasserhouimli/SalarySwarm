@@ -1,12 +1,12 @@
 # Datasets
 
-Both datasets are committed to the repository and uploaded to HDFS by
-`make put-data`.
+Both datasets are committed to the repository under `data/` and uploaded to
+HDFS by `make put-data`.
 
 ## job_salary_prediction_dataset.csv
 
-Tabular salary dataset used by both the PySpark job (`spark.py`) and the
-Streamlit dashboard (`app.py`).
+Tabular salary dataset used by both the PySpark job
+(`analysis/salary_analysis.py`) and the Streamlit dashboard (`dashboard/app.py`).
 
 - **Rows:** 250,000
 - **Columns:** 10

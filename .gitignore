@@ -36,8 +36,8 @@ docker-compose.override.yml
 .env.local
 
 # Large data files (uncomment if you prefer not to track them)
-# datasets/*.csv
-# purchases.txt
+# data/*.csv
+# data/purchases.txt
 
 # Reports (generated PDFs)
 # *.pdf

@@ -50,9 +50,9 @@ docker compose up
         v
   hdfs://namenode:9000/datasets/
         |
-        +--> spark.py           KPIs + aggregations --> Parquet
-        +--> app.py             Streamlit dashboard
-        +--> mapper / reducer   sales per city (MapReduce)
+        +--> analysis/     PySpark KPIs + aggregations --> Parquet
+        +--> dashboard/    Streamlit dashboard
+        +--> streaming/    sales per city (MapReduce)
 ```
 
 Details of the topology, ports and data flow are in
@@ -79,7 +79,7 @@ Details of the topology, ports and data flow are in
 | Distributed compute | Apache Spark 3.5.1 (PySpark)                      |
 | Dashboard           | Streamlit + Plotly (Express / Graph Objects)      |
 | Data frames         | pandas                                            |
-| Batch processing    | Hadoop Streaming (mapper.py / reducer.py)         |
+| Batch processing    | Hadoop Streaming (`streaming/`)                   |
 | Orchestration       | Docker Compose                                    |
 | Quality             | pytest, ruff, GitHub Actions                      |
 
@@ -99,18 +99,21 @@ troubleshooting live in [`docs/usage.md`](docs/usage.md).
 
 ```text
 bigdata/
-|-- app.py                      Streamlit salary dashboard
-|-- spark.py                    PySpark batch analysis (writes Parquet to HDFS)
-|-- mapper.py / reducer.py      Hadoop Streaming MapReduce job
+|-- analysis/
+|   |-- salary_analysis.py      PySpark batch analysis (writes Parquet to HDFS)
+|-- dashboard/
+|   |-- app.py                  Streamlit salary dashboard
+|-- streaming/
+|   |-- mapper.py               Hadoop Streaming mapper
+|   |-- reducer.py              Hadoop Streaming reducer
+|-- data/
+|   |-- job_salary_prediction_dataset.csv   Salary dataset (~17 MB, 250K rows)
+|   |-- purchases.txt                       Retail transactions (308K rows, ~16 MB)
+|-- docs/                       Architecture, usage, datasets, MapReduce, report
+|-- tests/                      Unit tests for the mapper and reducer
 |-- docker-compose.yml          Hadoop + Spark cluster definition
 |-- Makefile                    Convenience targets for the whole flow
 |-- requirements.txt            Pinned runtime dependencies
-|-- purchases.txt               Retail transaction dataset (~15 MB)
-|-- datasets/
-|   |-- job_salary_prediction_dataset.csv   Salary dataset (~17 MB, 250K rows)
-|-- docs/                       Architecture, usage, datasets, MapReduce notes
-|-- tests/                      Unit tests for the mapper and reducer
-|-- BigDataProject_Rapport.pdf  Project report (French)
 ```
 
 ## Datasets
@@ -130,7 +133,7 @@ by `nalisha`. Column-level detail is in [`docs/datasets.md`](docs/datasets.md).
 - [`docs/usage.md`](docs/usage.md) — setup, run commands, troubleshooting.
 - [`docs/datasets.md`](docs/datasets.md) — dataset schemas and provenance.
 - [`docs/mapreduce.md`](docs/mapreduce.md) — MapReduce design and results.
-- `BigDataProject_Rapport.pdf` — full project report (French).
+- [`docs/report.pdf`](docs/report.pdf) — full project report (French).
 
 ## Roadmap
 

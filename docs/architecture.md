@@ -29,12 +29,12 @@ Web UIs once the cluster is up:
 
 ## Volume mounts
 
-| Container      | Host path   | Container path | Purpose                      |
-| -------------- | ----------- | -------------- | ---------------------------- |
-| `namenode`     | `./datasets`| `/datasets`    | Datasets available to HDFS   |
-| `spark-master` | `./datasets`| `/opt/data`    | Datasets available to Spark  |
-| `namenode`     | `.`         | `/opt/project` | `mapper.py` / `reducer.py`   |
-| `spark-master` | `.`         | `/opt/project` | `spark.py` / `app.py`        |
+| Container      | Host path | Container path | Purpose                       |
+| -------------- | --------- | -------------- | ----------------------------- |
+| `namenode`     | `./data`  | `/data`        | Datasets uploaded into HDFS   |
+| `spark-master` | `./data`  | `/data`        | Datasets available to Spark   |
+| `namenode`     | `.`       | `/opt/project` | Streaming jobs (`streaming/`) |
+| `spark-master` | `.`       | `/opt/project` | Analysis + dashboard sources  |
 
 The project root is mounted read-only-by-convention at `/opt/project` so the
 Streaming and Spark commands can point at the source files directly.
@@ -43,9 +43,9 @@ Streaming and Spark commands can point at the source files directly.
 
 ```text
 /datasets/
-    job_salary_prediction_dataset.csv   uploaded from ./datasets
-    purchases.txt                       uploaded from ./purchases.txt
-    analytics/                          Parquet outputs written by spark.py
+    job_salary_prediction_dataset.csv   uploaded from ./data
+    purchases.txt                       uploaded from ./data
+    analytics/                          Parquet outputs written by the analysis job
         kpis/
         salary_by_job_title/
         salary_by_location/
@@ -58,12 +58,12 @@ Streaming and Spark commands can point at the source files directly.
 ### Salary analytics
 
 ```text
-datasets/job_salary_prediction_dataset.csv (local)
+data/job_salary_prediction_dataset.csv (local)
         |
         v  make put-data
 HDFS /datasets/job_salary_prediction_dataset.csv
         |
-        |  spark.py  -> cast + drop null salaries
+        |  analysis/salary_analysis.py  -> cast + drop null salaries
         v
 aggregations (job title, location, education, industry, remote work, ...)
         |
@@ -71,19 +71,19 @@ aggregations (job title, location, education, industry, remote work, ...)
         +--> written to HDFS /datasets/analytics/*.parquet
         |
         v
-app.py (Streamlit) reads the CSV from HDFS and renders the dashboard
+dashboard/app.py (Streamlit) reads the CSV from HDFS and renders the dashboard
 ```
 
 ### Retail MapReduce
 
 ```text
-purchases.txt (tab-separated)
+data/purchases.txt (tab-separated)
       |
       v  Hadoop Streaming
-mapper.py   (city, 1)
+streaming/mapper.py   (city, 1)
       |
       v  shuffle + sort by city
-reducer.py  (city, total_sales)
+streaming/reducer.py  (city, total_sales)
       |
       v
 HDFS /output/part-*  -> copied into docs/mapreduce.md as an example
@@ -91,8 +91,9 @@ HDFS /output/part-*  -> copied into docs/mapreduce.md as an example
 
 Processing notes:
 
-- `spark.py` and `app.py` both read from `hdfs://namenode:9000/...`; the HDFS
-  name node is resolved by the Docker network DNS, not by an IP.
+- `analysis/salary_analysis.py` and `dashboard/app.py` both read from
+  `hdfs://namenode:9000/...`; the HDFS name node is resolved by the Docker
+  network DNS, not by an IP.
 - The dashboard loads and cleans the dataset once per session; every widget then
   runs against that cached Spark DataFrame.
 

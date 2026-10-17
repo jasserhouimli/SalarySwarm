@@ -8,7 +8,7 @@ Streaming: it counts how many transactions occurred per city in `purchases.txt`.
 - **Input:** HDFS `/datasets/purchases.txt` (tab-separated, 308,103 rows).
 - **Output:** HDFS `/output/part-*`, one `city<TAB>count` line per city.
 
-## Mapper (`mapper.py`)
+## Mapper (`streaming/mapper.py`)
 
 For every line the mapper splits on tabs, takes the **city** (field 3) and emits
 `city<TAB>1`. Lines with fewer than three fields are ignored.
@@ -20,7 +20,7 @@ for line in sys.stdin:
         print("{}\t1".format(parts[2].strip()))
 ```
 
-## Reducer (`reducer.py`)
+## Reducer (`streaming/reducer.py`)
 
 Hadoop sorts the mapper output by key before the reduce phase, so identical
 cities arrive consecutively. The reducer sums the run of equal keys and flushes
@@ -50,8 +50,8 @@ docker exec namenode yarn jar \
   /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
   -input /datasets/purchases.txt \
   -output /output \
-  -mapper  "python3 /opt/project/mapper.py" \
-  -reducer "python3 /opt/project/reducer.py"
+  -mapper  "python3 /opt/project/streaming/mapper.py" \
+  -reducer "python3 /opt/project/streaming/reducer.py"
 ```
 
 ## Result

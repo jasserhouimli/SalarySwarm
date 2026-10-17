@@ -7,7 +7,7 @@ be reused without rescanning the raw CSV.
 
 Run it with ``make spark`` (or ``spark-submit`` inside the ``spark-master``
 container):
-    spark-submit --master spark://spark-master:7077 /opt/project/spark.py
+    spark-submit --master spark://spark-master:7077 /opt/project/analysis/salary_analysis.py
 """
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
-# Runtime dependencies for the Spark batch job (spark.py) and the
-# Streamlit dashboard (app.py).
+# Runtime dependencies for the Spark batch job
+# (analysis/salary_analysis.py) and the Streamlit dashboard (dashboard/app.py).
 #
 # Pinned to the versions validated against the Apache Spark 3.5.1 cluster
 # defined in docker-compose.yml.

@@ -12,8 +12,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MAPPER = ROOT / "mapper.py"
-REDUCER = ROOT / "reducer.py"
+STREAMING = ROOT / "streaming"
+MAPPER = STREAMING / "mapper.py"
+REDUCER = STREAMING / "reducer.py"
 
 SAMPLE_ROWS = (
     "2012-01-01\t09:00\tSan Jose\tMen's Clothing\t214.05\tAmex\n"

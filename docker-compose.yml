@@ -12,7 +12,7 @@ services:
       CORE_CONF_fs_defaultFS: hdfs://namenode:9000
       YARN_CONF_yarn_resourcemanager_hostname: resourcemanager
     volumes:
-      - ./datasets:/datasets
+      - ./data:/data
       - .:/opt/project
     networks:
       - hadoop
@@ -132,7 +132,7 @@ services:
       - --webui-port
       - "8080"
     volumes:
-      - ./datasets:/opt/data
+      - ./data:/data
       - .:/opt/project
     ports:
       - "7077:7077"

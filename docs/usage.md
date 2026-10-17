@@ -28,8 +28,8 @@ which is equivalent to:
 
 ```bash
 docker exec namenode hdfs dfs -mkdir -p /datasets
-docker exec namenode hdfs dfs -put -f /opt/project/datasets/job_salary_prediction_dataset.csv /datasets/
-docker exec namenode hdfs dfs -put -f /opt/project/purchases.txt /datasets/
+docker exec namenode hdfs dfs -put -f /opt/project/data/job_salary_prediction_dataset.csv /datasets/
+docker exec namenode hdfs dfs -put -f /opt/project/data/purchases.txt /datasets/
 ```
 
 ## Run the Spark batch analysis
@@ -40,7 +40,7 @@ make spark
 
 ```bash
 docker exec spark-master /opt/spark/bin/spark-submit \
-  --master spark://spark-master:7077 /opt/project/spark.py
+  --master spark://spark-master:7077 /opt/project/analysis/salary_analysis.py
 ```
 
 The job prints the schema, the KPIs and every aggregation, then writes the
@@ -60,15 +60,15 @@ docker exec namenode yarn jar \
   /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
   -input /datasets/purchases.txt \
   -output /output \
-  -mapper  "python3 /opt/project/mapper.py" \
-  -reducer "python3 /opt/project/reducer.py"
+  -mapper  "python3 /opt/project/streaming/mapper.py" \
+  -reducer "python3 /opt/project/streaming/reducer.py"
 ```
 
 ## Launch the Dashboard
 
 ```bash
 make deps        # install streamlit/plotly/pandas inside spark-master (once)
-make dashboard   # streamlit run /opt/project/app.py
+make dashboard   # streamlit run /opt/project/dashboard/app.py
 ```
 
 Then open <http://localhost:8501>.
