@@ -1,11 +1,11 @@
-# BigDataProject
+# SalarySwarm
 
 > A containerised big data pipeline that moves a 250,000-row salary dataset through
 > HDFS and Apache Spark, serves the analytics through an interactive Streamlit
 > dashboard, and runs a classic Hadoop Streaming MapReduce job over retail
 > transaction data.
 
-![CI](https://github.com/jasserhouimli/bigdata/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/jasserhouimli/SalarySwarm/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
 ![Apache Spark](https://img.shields.io/badge/Apache%20Spark-3.5.1-E25A1C?logo=apachespark&logoColor=white)
 ![Hadoop](https://img.shields.io/badge/Hadoop-3.2.1-66CCFF?logo=apachehadoop&logoColor=black)
@@ -20,7 +20,7 @@
 
 ## Overview
 
-BigDataProject stands up a real distributed stack on a single machine: a Hadoop
+SalarySwarm stands up a real distributed stack on a single machine: a Hadoop
 cluster (HDFS + YARN) and an Apache Spark cluster, both orchestrated with Docker
 Compose. Two independent workloads run on top of it:
 
