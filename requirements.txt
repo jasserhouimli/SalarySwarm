@@ -1,0 +1,9 @@
+# Runtime dependencies for the Spark batch job (spark.py) and the
+# Streamlit dashboard (app.py).
+#
+# Pinned to the versions validated against the Apache Spark 3.5.1 cluster
+# defined in docker-compose.yml.
+pyspark==3.5.1
+pandas==2.2.3
+plotly==5.24.1
+streamlit==1.39.0

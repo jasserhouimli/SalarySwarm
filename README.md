@@ -1,186 +1,139 @@
 # BigDataProject
 
-A full-stack big data pipeline combining Hadoop HDFS, Apache Spark, and Streamlit for salary data exploration and analytics, plus a classic MapReduce workflow for transaction processing.
+> A containerised big data pipeline that moves a 250,000-row salary dataset through
+> HDFS and Apache Spark, serves the analytics through an interactive Streamlit
+> dashboard, and runs a classic Hadoop Streaming MapReduce job over retail
+> transaction data.
+
+![CI](https://github.com/jasserhouimli/bigdata/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![Apache Spark](https://img.shields.io/badge/Apache%20Spark-3.5.1-E25A1C?logo=apachespark&logoColor=white)
+![Hadoop](https://img.shields.io/badge/Hadoop-3.2.1-66CCFF?logo=apachehadoop&logoColor=black)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?logo=docker&logoColor=white)
+
+## Preview
+
+![Salary analytics dashboard](docs/images/dashboard.png)
+
+*Streamlit dashboard reading the salary dataset from HDFS through Spark.*
+
+## Overview
+
+BigDataProject stands up a real distributed stack on a single machine: a Hadoop
+cluster (HDFS + YARN) and an Apache Spark cluster, both orchestrated with Docker
+Compose. Two independent workloads run on top of it:
+
+- **Salary analytics** — a 250,000-row job-salary CSV is stored in HDFS, analysed
+  with PySpark (KPIs, grouped aggregations, distribution statistics), and made
+  explorable through a Streamlit/Plotly dashboard.
+- **Retail MapReduce** — a Hadoop Streaming job implements the classic
+  word-count pattern to count sales per city over a tab-separated transaction log.
 
 ## Architecture
 
-```
-docker-compose up
-      |
-      v
-+------------------------------------------------------+
-|  Hadoop Cluster (HDFS + YARN)                        |
-|  - namenode (WebUI :9870, HDFS :9000)                |
-|  - 3x datanode                                       |
-|  - resourcemanager (WebUI :8088)                     |
-|  - 3x nodemanager                                    |
-|  - historyserver (WebUI :19888)                      |
-+------------------------------------------------------+
-|  Spark Cluster                                       |
-|  - spark-master (Spark :7077, UI :8080, App :8501)  |
-|  - 3x spark-worker                                   |
-+------------------------------------------------------+
-         |
-         | mounts ./datasets/ -> HDFS & Spark
-         v
+```text
+docker compose up
+        |
+        v
++------------------------------------------------+
+| Hadoop cluster (HDFS + YARN)                   |
+|   namenode  -  3x datanode                     |
+|   resourcemanager  -  3x nodemanager           |
+|   historyserver                                |
++------------------------------------------------+
++------------------------------------------------+
+| Spark cluster                                  |
+|   spark-master  -  3x spark-worker             |
++------------------------------------------------+
+        |
+        v
   hdfs://namenode:9000/datasets/
-         |
-         +---> spark.py        Batch analysis (console)
-         |
-         +---> app.py          Streamlit dashboard
-         |
-         +---> mapper/reducer  MapReduce on purchases.txt
+        |
+        +--> spark.py           KPIs + aggregations --> Parquet
+        +--> app.py             Streamlit dashboard
+        +--> mapper / reducer   sales per city (MapReduce)
 ```
 
-## Technology Stack
+Details of the topology, ports and data flow are in
+[`docs/architecture.md`](docs/architecture.md).
 
-| Component           | Technology                                       |
-| ------------------- | ------------------------------------------------ |
-| Language            | Python 3                                         |
-| Distributed Storage | Hadoop HDFS 3.2.1 (bde2020 images)               |
-| Resource Management | Hadoop YARN 3.2.1                                |
-| Distributed Compute | Apache Spark 3.5.1 (PySpark)                     |
-| Dashboard           | Streamlit                                        |
-| Charts              | Plotly (Express + Graph Objects)                 |
-| Data Processing     | Pandas                                           |
-| Containerisation    | Docker Compose (version 3.8)                     |
-| MapReduce           | Native Hadoop streaming (mapper.py / reducer.py) |
+## Highlights
 
-## Prerequisites
+- 12-container Hadoop + Spark cluster defined in a single `docker-compose.yml`.
+- The Spark job reads the raw CSV from HDFS and writes the aggregation results
+  back to HDFS as Parquet.
+- Interactive Streamlit/Plotly dashboard: KPIs, top-N rankings, salary
+  distribution, remote-work and certification analysis.
+- Classic MapReduce word-count pattern implemented with Hadoop Streaming.
+- `make` targets and a pinned `requirements.txt` make the whole flow reproducible.
+- Unit tests for the mapper and reducer run in CI without a cluster.
 
-- Docker and Docker Compose (v2 recommended)
-- At least 8 GB RAM allocated to Docker
-- A system capable of running 12 containers
+## Tech stack
 
-## Project Structure
+| Layer               | Technology                                        |
+| ------------------- | ------------------------------------------------- |
+| Language            | Python 3.11                                       |
+| Distributed storage | HDFS 3.2.1 (bde2020 images)                       |
+| Resource management | Hadoop YARN 3.2.1                                 |
+| Distributed compute | Apache Spark 3.5.1 (PySpark)                      |
+| Dashboard           | Streamlit + Plotly (Express / Graph Objects)      |
+| Data frames         | pandas                                            |
+| Batch processing    | Hadoop Streaming (mapper.py / reducer.py)         |
+| Orchestration       | Docker Compose                                    |
+| Quality             | pytest, ruff, GitHub Actions                      |
 
+## Getting started
+
+```bash
+make up         # start the Hadoop + Spark cluster
+make put-data   # upload the datasets into HDFS
+make spark      # run the PySpark batch analysis
+make dashboard  # open the dashboard on http://localhost:8501
 ```
+
+Run `make help` to list every target. Full instructions, exposed ports and
+troubleshooting live in [`docs/usage.md`](docs/usage.md).
+
+## Project layout
+
+```text
 bigdata/
-|-- app.py                    Streamlit salary dashboard
-|-- spark.py                  PySpark batch analysis script
-|-- mapper.py                 Hadoop MapReduce mapper (city count)
-|-- reducer.py                Hadoop MapReduce reducer (city count)
-|-- docker-compose.yml        12-service cluster definition
-|-- purchases.txt             Transaction dataset (~15 MB)
-|-- BigDataProject_Rapport.pdf  Project report (French)
-|
+|-- app.py                      Streamlit salary dashboard
+|-- spark.py                    PySpark batch analysis (writes Parquet to HDFS)
+|-- mapper.py / reducer.py      Hadoop Streaming MapReduce job
+|-- docker-compose.yml          Hadoop + Spark cluster definition
+|-- Makefile                    Convenience targets for the whole flow
+|-- requirements.txt            Pinned runtime dependencies
+|-- purchases.txt               Retail transaction dataset (~15 MB)
 |-- datasets/
 |   |-- job_salary_prediction_dataset.csv   Salary dataset (~17 MB, 250K rows)
-|
-|-- .gitignore
-|-- README.md
+|-- docs/                       Architecture, usage, datasets, MapReduce notes
+|-- tests/                      Unit tests for the mapper and reducer
+|-- BigDataProject_Rapport.pdf  Project report (French)
 ```
 
 ## Datasets
 
-### job_salary_prediction_dataset.csv
+| Dataset | Rows | Description |
+| ------- | ---- | ----------- |
+| `job_salary_prediction_dataset.csv` | 250,000 | Tabular salary data with 10 columns (job title, experience, education, skills, industry, company size, location, remote work, certifications, salary). |
+| `purchases.txt` | 308,103 | Tab-separated retail transactions: date, time, city, category, amount, payment method. |
 
-Salary prediction dataset with 250,000 records and 9 features:
+The salary dataset comes from the public Kaggle dataset
+[Job Salary Prediction Dataset](https://www.kaggle.com/datasets/nalisha/job-salary-prediction-dataset)
+by `nalisha`. Column-level detail is in [`docs/datasets.md`](docs/datasets.md).
 
-- `job_title` - Position name (Data Scientist, AI Engineer, etc.)
-- `experience_years` - Years of professional experience
-- `education_level` - High School, Diploma, Bachelor, Master, PhD
-- `skills_count` - Number of listed skills
-- `industry` - Healthcare, Finance, Technology, etc.
-- `company_size` - Startup, Small, Medium, Large, Enterprise
-- `location` - USA, India, Germany, UK, Canada, etc.
-- `remote_work` - Yes, No, Hybrid
-- `certifications` - Number of certifications held
-- `salary` - Annual salary (target variable)
+## Documentation
 
-### purchases.txt
+- [`docs/architecture.md`](docs/architecture.md) — topology, ports, data flow.
+- [`docs/usage.md`](docs/usage.md) — setup, run commands, troubleshooting.
+- [`docs/datasets.md`](docs/datasets.md) — dataset schemas and provenance.
+- [`docs/mapreduce.md`](docs/mapreduce.md) — MapReduce design and results.
+- `BigDataProject_Rapport.pdf` — full project report (French).
 
-Transaction records (tab-separated):
+## Roadmap
 
-- `date`, `time`, `city`, `product_category`, `amount`, `payment_method`
-
-## Setup and Deployment
-
-### 1. Start the Cluster
-
-```bash
-docker-compose up -d
-```
-
-This starts the entire 12-service environment. The first pull may take several minutes.
-
-### 2. Copy Datasets to HDFS
-
-```bash
-# Copy the salary dataset
-docker exec -it namenode hdfs dfs -mkdir -p /datasets
-docker exec -it namenode hdfs dfs -put /datasets/job_salary_prediction_dataset.csv /datasets/
-
-# Copy the purchases dataset (for MapReduce)
-docker exec -it namenode hdfs dfs -put /purchases.txt /datasets/
-```
-
-### 3. Run the Spark Batch Analysis
-
-```bash
-docker exec -it spark-master spark-submit \
-  --master spark://spark-master:7077 \
-  /opt/data/spark.py
-```
-
-Output is printed to the console.
-
-### 4. Run the MapReduce Job
-
-```bash
-docker exec -it namenode yarn jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
-  -input /datasets/purchases.txt \
-  -output /output \
-  -mapper "python3 /datasets/mapper.py" \
-  -reducer "python3 /datasets/reducer.py"
-```
-
-### 5. Launch the Streamlit Dashboard
-
-```bash
-docker exec -it spark-master streamlit run /opt/data/app.py
-```
-
-Open your browser to `http://localhost:8501`.
-
-## Services and Ports
-
-| Service         | Port  | Purpose             |
-| --------------- | ----- | ------------------- |
-| namenode        | 9870  | HDFS Web UI         |
-| namenode        | 9000  | HDFS file system    |
-| resourcemanager | 8088  | YARN Web UI         |
-| historyserver   | 19888 | Job history Web UI  |
-| spark-master    | 7077  | Spark master        |
-| spark-master    | 8080  | Spark Web UI        |
-| spark-master    | 8501  | Streamlit dashboard |
-
-## Applications
-
-### Streamlit Dashboard (app.py)
-
-An interactive salary exploration dashboard with:
-
-- Key performance indicators (record count, avg salary, avg experience, min/max salary)
-- Industry filter in the sidebar
-- Top 10 job titles by average salary
-- Top 10 locations by average salary
-- Average salary by education level
-- Top 10 industries by average salary
-- Salary distribution histogram with box plot
-- Remote work and certification analysis
-- Raw data sample viewer
-
-### PySpark Analysis (spark.py)
-
-A comprehensive batch analysis script that runs:
-
-1. Schema inspection and data cleaning
-2. KPI computation (count, min/max/avg salary, avg experience)
-3. Grouped aggregations by job title, location, education, industry
-4. Remote work, certification, experience, and skills analysis
-5. Salary distribution statistics
-
-### MapReduce (mapper.py / reducer.py)
-
-A classic word-count-style MapReduce job that counts purchase transactions per city from `purchases.txt`.
+- Replace the inferred schema with an explicit one and add data-quality checks.
+- Expose the saved Parquet aggregations as Spark SQL views for the dashboard.
+- Parameterise cluster size and resource limits through environment variables.
